@@ -1,0 +1,17 @@
+[package]
+name = "raytracing"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nalgebra = "*"
+rand = "*"
+num = "*"
+num-traits = "*"
+tracing = "*"
+tracing-subscriber = "*"
+
+[features]
+optimised_intersection = []
