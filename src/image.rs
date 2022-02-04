@@ -9,8 +9,9 @@ use tracing::debug;
 
 use std::io;
 use nalgebra::{Vector3, vector, Unit, point};
+use crate::geometry::world::three_sphere_world;
 use crate::{Scalar, Camera, Material, colour};
-use crate::geometry::{Sphere, Ray, Intersectable, Geometry};
+use crate::geometry::{Sphere, Ray, Intersectable, Geometry, Plane};
 
 #[derive(Debug)]
 pub enum SphereTest {
@@ -43,7 +44,7 @@ pub fn generate_sphere<T: Scalar>(shading: SphereTest, horizontal: f64, vertical
             });
 
             buf[row * width + col] =
-                if let Some(intersection) = sphere.intersect(ray) {
+                if let Some(intersection) = sphere.intersect(ray, T::from_float(0.1), T::from_float(100.0)) {
                     match shading {
                         SphereTest::Flat => sphere.material().colour(),
                         SphereTest::Normals => normal_to_rgb(intersection.normal()),
@@ -67,22 +68,7 @@ pub fn generate_sphere_world<T: Scalar>() -> PixelBuffer<T> {
     let (height, width) = (buf.height(), buf.width());
     let camera = Camera::default();
     debug!("{:?}", camera);
-    let mut world = StaticWorld::default();
-    world.push_sphere(Sphere::default());
-    world.push_sphere(
-        Sphere::new(
-            point![T::from_float(-1.5), T::zero(), -T::one()],
-            T::from_float(0.5),
-            Material::simple_diffuse_colour(colour::green()),
-        )
-    );
-    world.push_sphere(
-        Sphere::new(
-            point![T::from_float(1.5), T::zero(), -T::one()],
-            T::from_float(0.5),
-            Material::simple_diffuse_colour(colour::blue()),
-        )
-    );
+    let mut world = three_sphere_world();
     debug!("{:?}", world);
     for row in 0..height {
         for col in 0..width {
@@ -95,7 +81,7 @@ pub fn generate_sphere_world<T: Scalar>() -> PixelBuffer<T> {
             });
 
             buf[row * width + col] =
-                if let Some(intersection) = world.intersect(ray) {
+                if let Some(intersection) = world.intersect(ray, T::from_float(0.1), T::from_float(100.0)) {
                     normal_to_rgb(intersection.normal())
                 } else {
                     // otherwise we just insert the background colour

@@ -49,7 +49,7 @@ where
     T: Scalar
 {
     #[cfg(not(feature = "optimised_intersection"))]
-    fn intersect(&self, ray: Ray<T>) -> Option<Intersection<T>> {
+    fn intersect(&self, ray: Ray<T>, min_depth: T, max_depth: T) -> Option<Intersection<T>> {
         // debug!("Unoptimised Intersection");
         let origin_to_center = ray.origin - self.center;
         let a = ray.orientation.dot(&ray.orientation);
@@ -60,16 +60,21 @@ where
             None
         } else {
             let root = -(b + descriminant.sqrt()) / (T::from_float(2.0) * a);
-            let point = ray.project(root);
-            let incident = ray.orientation;
-            let normal = self.normal(point);
-            let material = self.material();
-            Some(Intersection::new(point, incident, normal, material))
+            let depth = root;
+            if depth >= min_depth && depth <= max_depth {   
+                let point = ray.project(root);
+                let incident = ray.orientation;
+                let normal = self.normal(point);
+                let material = self.material();
+                Some(Intersection::new(point, incident, normal, material))
+            } else {
+                None
+            }
         }
     }
 
     #[cfg(feature = "optimised_intersection")]
-    fn intersect(&self, ray: Ray<T>) -> Option<Intersection<T>> {
+    fn intersect(&self, ray: Ray<T>, min_depth: T, max_depth: T) -> Option<Intersection<T>> {
         // TODO: Fix this stupid shit
         // debug!("Optimised Intersection");
         // simplified using the known constant factor in b and that the ray is unit length

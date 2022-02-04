@@ -60,7 +60,7 @@ pub trait Intersectable<T>
 where
     T: Scalar + Debug
 {
-    fn intersect(&self, ray: Ray<T>) -> Option<Intersection<T>>;
+    fn intersect(&self, ray: Ray<T>, min_depth: T, max_depth: T) -> Option<Intersection<T>>;
     // fn material(&self) -> Material<T>;
     // fn normal(&self, point: Point3<T>) -> Unit<Vector3<T>>;
 }
