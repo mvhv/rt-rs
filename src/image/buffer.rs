@@ -3,6 +3,7 @@ use std::{fs, io, path};
 use std::io::Write;
 
 use nalgebra::{Vector3, vector};
+use tracing::debug;
 
 use crate::Scalar;
 use crate::image::{AspectRatio, Rectangle, AsPPM};
@@ -15,7 +16,7 @@ where
     width: usize,
     height: usize,
     aspect: AspectRatio,
-    pixels: Vec<Vector3<T>>
+    pub pixels: Vec<Vector3<T>>
 }
 
 impl<T> PixelBuffer<T>
@@ -48,8 +49,40 @@ where
     pub fn aspect_ratio(&self) -> &AspectRatio {
         &self.aspect
     }
+
+    pub fn apply_gamma(self, gamma: T) -> Self {
+        let pixels = self.pixels
+            .into_iter()
+            .map(|px| {
+                px.map(|ch| {
+                    ch.powf(gamma)
+                })
+            }).collect();
+        Self { pixels, ..self }
+    }
+
+    pub fn as_u32(&self) -> Vec<u32> {
+        self.pixels
+            .iter()
+            .map(|px| {
+                let px_u8 = px.map(|ch| ch.scale_to_u8());
+                from_u8_rgb(px_u8.x, px_u8.y, px_u8.z)
+            }).collect()
+    }
+
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    pub fn height(&self) -> usize {
+        self.height
+    }
 }
 
+fn from_u8_rgb(r: u8, g: u8, b: u8) -> u32 {
+    let (r, g, b) = (r as u32, g as u32, b as u32);
+    (r << 16) | (g << 8) | b
+}
 
 impl<T> Rectangle for PixelBuffer<T>
 where
@@ -64,8 +97,13 @@ where
     }
 }
 
+// moved gamma scaling to optional method on PixelBuffer
+// fn pixel_as_u8_gamma<T: Scalar>(pixel: Vector3<T>, gamma: T) -> Vector3<u8> {
+//     pixel.map(|ch| ch.powf(gamma).scale_to_u8())
+// }
+
 fn pixel_as_u8<T: Scalar>(pixel: Vector3<T>) -> Vector3<u8> {
-    vector![pixel[0].scale_to_u8(), pixel[1].scale_to_u8(), pixel[2].scale_to_u8()]
+    pixel.map(|ch| ch.scale_to_u8())
 }
 
 impl<T> AsPPM for PixelBuffer<T>
@@ -99,7 +137,9 @@ where
             .truncate(true)
             .create(true)
             .open(path)?;
-    
+        
+        debug!("writing framebuffer to {filename}");
+
         file.write_all(
             self.as_ppm_string()
                 .as_bytes()

@@ -1,10 +1,20 @@
-use nalgebra::{Vector3, Point3, Unit, vector, point};
-use tracing::debug;
+use std::option::Option;
 
-use crate::{Scalar, Material, colour};
-use crate::geometry::{Intersectable, Intersection, Ray};
+use nalgebra::{Vector3, Point3, Unit, point};
 
-#[derive(Debug)]
+use crate::{
+    colour,
+    geometry::{
+        AABB,
+        Intersectable,
+        Intersection,
+        Ray
+    },
+    Material,
+    Scalar,
+};
+
+#[derive(Debug, Clone)]
 pub struct Sphere<T>
 where
     T: Scalar
@@ -42,6 +52,10 @@ where
     pub fn normal(&self, point: Point3<T>) -> Unit<Vector3<T>> {
         Unit::new_normalize(point - self.center)
     }
+
+    pub fn with_material(self, material: Material<T>) -> Self {
+        Self { material, ..Default::default() }
+    }
 }
 
 impl<T> Intersectable<T> for Sphere<T>
@@ -50,26 +64,33 @@ where
 {
     #[cfg(not(feature = "optimised_intersection"))]
     fn intersect(&self, ray: Ray<T>, min_depth: T, max_depth: T) -> Option<Intersection<T>> {
-        // debug!("Unoptimised Intersection");
-        let origin_to_center = ray.origin - self.center;
-        let a = ray.orientation.dot(&ray.orientation);
-        let b = T::from_float(2.0) * origin_to_center.dot(&ray.orientation);
+        // trace!("interesecting ray {ray:?} with sphere {self:?}");
+        let origin_to_center = ray.origin() - self.center;
+        // quadratic method
+        let a = ray.orientation().dot(&ray.orientation());
+        let b = T::from_float(2.0) * origin_to_center.dot(&ray.orientation());
         let c = origin_to_center.dot(&origin_to_center) - self.radius * self.radius;
         let descriminant = b*b - T::from_float(4.0)*a*c;
-        if descriminant < T::zero() {
-            None
-        } else {
-            let root = -(b + descriminant.sqrt()) / (T::from_float(2.0) * a);
-            let depth = root;
-            if depth >= min_depth && depth <= max_depth {   
+        // if descrim is below zero then no real valued solution (i.e. no intersect)
+        if descriminant >= T::zero() {
+            // why am I only checking the positive value here?
+            // does this disallow intersections behind the camera?
+            let divisor = T::from_float(2.0) * a;
+            let descriminant_root = descriminant.sqrt();
+            let root_low = (-b - descriminant_root) / divisor;
+            let root_high = (-b + descriminant_root) / divisor;
+            let root = if root_low > T::zero() {root_low} else {root_high};
+            if root >= min_depth && root <= max_depth {   
                 let point = ray.project(root);
-                let incident = ray.orientation;
+                // let incident = ray.orientation();
                 let normal = self.normal(point);
                 let material = self.material();
-                Some(Intersection::new(point, incident, normal, material))
+                Some(Intersection::new(point, ray, normal, material))
             } else {
                 None
             }
+        } else {
+            None
         }
     }
 
@@ -92,6 +113,10 @@ where
             let material = self.material();
             Some(Intersection::new(point, incident, normal, material))
         }
+    }
+
+    fn bounding_box(&self) -> Option<AABB<T>> {
+        None
     }
 }
 

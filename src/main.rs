@@ -1,47 +1,60 @@
 use std::io;
 
-use nalgebra::{vector, Point3, Vector3};
+use nalgebra::point;
+// use nalgebra::{vector, Point3, Vector3};
 use tracing::{debug, error, info, span, warn, Level};
 
 use raytracing::{
     image::{
-        PixelBuffer,
+        AsPPM,
+        render_scene_parallel_quality,
         AspectRatio,
-        Rectangle,
-        AsPPM
     },
-    geometry::Ray,
+    geometry::world,
     camera::Camera,
 };
 
-// #[tracing::instrument]
+#[tracing::instrument]
 fn main() -> io::Result<()> {    
 
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::TRACE)
+        .with_max_level(tracing::Level::DEBUG)
+        // .with_ansi(false)
         .pretty()
         .init();
 
-    // simple test
-    // PixelBuffer::<f32>::new_from_vertical_ratio(1080, (16, 9).into())
-    //     .write_ppm("test_output/blank1080.ppm")?;
-    debug!("setting up sphere");
-    let img = raytracing::image::generate_sphere::<f32>(
-        raytracing::image::SphereTest::Normals,
-        0.0,
-        0.0
-    );
-    debug!("sphere created");
-    img.write_ppm("asdf.ppm")?;
-    debug!("sphere written to asdf.ppm");
+    debug!("setting up scene");
+    // let camera = Camera::<f32>::default();
+    let origin = point![0.5, -0.3, 0.0];
+    let focus = point![0.1, -0.1, -1.0];
+    let camera = Camera::look_at(origin, focus, 80.0_f32, AspectRatio::default());//.with_aperture(0.0075);
+    // let camera = Camera::default();
+    let scene = world::ten_sphere_scene();
+    debug!("rendering scene");
+    render_scene_parallel_quality(camera, scene, 720, 100)
+        .apply_gamma(0.5)
+        .write_ppm("test_output/80vfov_sphere_scene_dof.ppm")?;
+    // if let Ok(mut window) = minifb::Window::new(
+    //     "Test",
+    //     640,
+    //     400,
+    //     minifb::WindowOptions {
+    //         // resize: true,
+    //         // scale: true,
+    //         ..minifb::WindowOptions::default()
+    //     }
+    // ) {
+    //     window.update_with_buffer(
+    //         &buf.as_u32(),
+    //         buf.width(),
+    //         buf.height()
+    //     ).unwrap();
+    //     std::thread::sleep(std::time::Duration::new(10, 0));
+    // } else {
+    //     panic!("unable to create window");
+    // }
 
-    debug!("setting up world");
-    let img = raytracing::image::generate_sphere_world::<f32>();
-    debug!("sphere world created");
-    img.write_ppm("sphere_world.ppm")?;
-    debug!("sphere written to sphere_world.ppm");
-        
-    // let mut PixelBuffer::<f64>::new_from_horizontal_ratio(600, (600, 300).into());
+
     Ok(())
 }
 

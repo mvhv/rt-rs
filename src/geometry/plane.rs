@@ -1,9 +1,17 @@
 use nalgebra::{Vector3, Point3, Unit, vector, point};
 
-use crate::{Scalar, Material, colour};
-use crate::geometry::{Ray, Intersectable, Intersection};
+use crate::{
+    Scalar,
+    Material,
+    geometry::{
+        AABB,
+        Intersectable,
+        Intersection,
+        Ray,
+    },
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Plane<T>
 where
     T: Scalar
@@ -28,9 +36,9 @@ where
 {
     fn default() -> Self {
         Self {
-            origin: point![T::zero(), T::from_float(-5.0), T::zero()],
+            origin: point![T::zero(), T::from_float(-0.5), T::zero()],
             normal: Unit::new_normalize(vector![T::zero(), T::one(), T::zero()]),
-            material: Material::simple_diffuse_colour(colour::black()),
+            material: Material::checkerboard(),
         }
     }
 }
@@ -43,25 +51,25 @@ where
         // plane equation (p - p0).n = 0
         // line equation p = l0 + l*d
         // l.n != 0 for an intersection
-        let ray_dot_normal = ray.orientation.dot(&self.normal);
+        let ray_dot_normal = ray.orientation().dot(&self.normal);
         if ray_dot_normal == T::zero() {
             None
         } else {
             // d = ((p0 - l0).n) / l.n
-            let depth = (self.origin - ray.origin).dot(&self.normal) / ray_dot_normal;
+            let depth = (self.origin - ray.origin()).dot(&self.normal) / ray_dot_normal;
             if depth >= min_depth && depth <= max_depth {
                 let point = ray.project(depth);
-                Some(Intersection::new(point, ray.orientation, self.normal, self.material))
+                Some(Intersection::new(point, ray, self.normal, self.material))
             } else {
                 None
             }
             
         }
     }
-    // fn material(&self) -> Material<T> {
-    //     todo!()
-    // }
-    // fn normal(&self, point: Point3<T>) -> Unit<Vector3<T>> {
-    //     todo!()
-    // }
+
+    /// an infinite plane can't have a 3D bounding box
+    /// will need some other method to handle this
+    fn bounding_box(&self) -> Option<AABB<T>> {
+        None
+    }
 }

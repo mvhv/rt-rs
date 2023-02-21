@@ -8,10 +8,14 @@ edition = "2021"
 [dependencies]
 nalgebra = "*"
 rand = "*"
+rand_distr = "*"
 num = "*"
 num-traits = "*"
 tracing = "*"
 tracing-subscriber = "*"
+indicatif = "*"
+minifb = "*"
+rayon = "*"
 
 [features]
 optimised_intersection = []

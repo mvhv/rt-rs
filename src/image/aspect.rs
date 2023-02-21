@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq, Eq)]
 pub struct AspectRatio {
-    horizontal: usize,
-    vertical: usize,
+    pub horizontal: usize,
+    pub vertical: usize,
 }
 
 impl AspectRatio {
@@ -61,4 +61,7 @@ impl From<(usize, usize)> for AspectRatio {
 pub trait Rectangle {
     fn width(&self) -> usize;
     fn height(&self) -> usize;
+    fn as_tuple(&self) -> (usize, usize) {
+        (self.width(), self.height())
+    }
 }
