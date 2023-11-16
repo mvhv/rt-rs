@@ -14,12 +14,12 @@ pub use aabb::Aabb;
 
 use crate::Scalar;
 
-use core::fmt::Debug;
+// use core::fmt::Debug;
 
-#[derive(Debug, Clone)]
+// #[derive(Clone, Debug)]
 pub enum Geometry<T>
 where
-    T: Scalar + Debug
+    T: Scalar
 {
     Sphere(Sphere<T>),
     Plane(Plane<T>),

@@ -29,7 +29,7 @@ use crate::{
 // }
 
 /// this two vector approach works well with nalgebra
-struct Aabb<T>
+pub struct Aabb<T>
 where
     T: Scalar
 {
@@ -41,7 +41,7 @@ impl<T> Aabb<T>
 where
     T: Scalar
 {
-    fn intersect(&self, ray: Ray<T>, min_depth: T) -> bool {
+    pub fn intersect(&self, ray: Ray<T>, min_depth: T) -> bool {
         let t0 = (self.min - ray.origin()).component_div(&ray.orientation());
         let t1 = (self.max - ray.origin()).component_div(&ray.orientation());
         let (t_min, t_max) = t0.inf_sup(&t1);

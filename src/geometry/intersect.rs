@@ -1,14 +1,13 @@
 use core::fmt::Debug;
 
 use nalgebra::{vector, Vector3, Point3, Unit};
-use num::One;
 use rand::Rng;
 use rand_distr::StandardNormal;
 
 use crate::{
     Scalar,
     material::{Material, self},
-    geometry::{Ray, AABB},
+    geometry::{Ray, Aabb},
     colour
 };
 
@@ -79,13 +78,13 @@ where
         self.face
     }
 
-    pub fn front_face(&self) -> bool {
-        self.face == Face::Front
-    }
+    // pub fn front_face(&self) -> bool {
+    //     self.face == Face::Front
+    // }
 
-    pub fn back_face(&self) -> bool {
-        self.face == Face::Back
-    }
+    // pub fn back_face(&self) -> bool {
+    //     self.face == Face::Back
+    // }
   
     /// select an orientation for this
     fn scatter_type(&self) -> Scatter {
@@ -203,7 +202,7 @@ where
     T: Scalar + Debug
 {
     fn intersect(&self, ray: Ray<T>, min_depth: T, max_depth: T) -> Option<Intersection<T>>;
-    fn bounding_box(&self) -> Option<AABB<T>>;
+    fn bounding_box(&self) -> Option<Aabb<T>>;
     // fn material(&self) -> Material<T>;
     // fn normal(&self, point: Point3<T>) -> Unit<Vector3<T>>;
 }

@@ -5,7 +5,7 @@ use nalgebra::{Vector3, Point3, Unit, point};
 use crate::{
     colour,
     geometry::{
-        AABB,
+        Aabb,
         Intersectable,
         Intersection,
         Ray
@@ -115,7 +115,7 @@ where
         }
     }
 
-    fn bounding_box(&self) -> Option<AABB<T>> {
+    fn bounding_box(&self) -> Option<Aabb<T>> {
         None
     }
 }

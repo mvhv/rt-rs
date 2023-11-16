@@ -1,6 +1,4 @@
 use nalgebra::Vector3;
-use num::One;
-use tracing::trace;
 
 use crate::{colour, Scalar};
 
@@ -34,7 +32,7 @@ where
     fn default() -> Self {
         Self {
             colour: colour::red(),
-            absorptivity: T::from_float(0.3),
+            absorptivity: T::from_float(0.2),
             specularity: T::zero(),
             diffusivity: T::one(),
             transmissibility: T::zero(),

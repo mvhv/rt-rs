@@ -4,7 +4,7 @@ use crate::{
     Scalar,
     Material,
     geometry::{
-        AABB,
+        Aabb,
         Intersectable,
         Intersection,
         Ray,
@@ -69,7 +69,7 @@ where
 
     /// an infinite plane can't have a 3D bounding box
     /// will need some other method to handle this
-    fn bounding_box(&self) -> Option<AABB<T>> {
+    fn bounding_box(&self) -> Option<Aabb<T>> {
         None
     }
 }

@@ -25,15 +25,16 @@ fn main() -> io::Result<()> {
 
     debug!("setting up scene");
     // let camera = Camera::<f32>::default();
-    let origin = point![0.5, -0.3, 0.0];
-    let focus = point![0.1, -0.1, -1.0];
-    let camera = Camera::look_at(origin, focus, 80.0_f32, AspectRatio::default());//.with_aperture(0.0075);
-    // let camera = Camera::default();
+    // let origin = point![0.5, -0.3, 0.0];
+    // let focus = point![0.1, -0.1, -1.0];
+    // let camera = Camera::look_at(origin, focus, 80.0_f32, AspectRatio::default());//.with_aperture(0.0075);
+    let camera = Camera::default();
     let scene = world::ten_sphere_scene();
+    // let scene = world::plane_scene();
     debug!("rendering scene");
-    render_scene_parallel_quality(camera, scene, 720, 100)
+    render_scene_parallel_quality(camera, scene, 720, 200)
         .apply_gamma(0.5)
-        .write_ppm("test_output/80vfov_sphere_scene_dof.ppm")?;
+        .write_ppm("test_output/ten_sphere_scene.ppm")?;
     // if let Ok(mut window) = minifb::Window::new(
     //     "Test",
     //     640,

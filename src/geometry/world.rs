@@ -1,8 +1,8 @@
-use nalgebra::point;
+use nalgebra::{point, Vector3, vector, Unit};
 use tracing::trace;
 
-use crate::{Scalar, Material, colour, material};
-use crate::geometry::{Ray, Intersectable, Intersection, Geometry};
+use crate::{Scalar, Material, colour};
+use crate::geometry::{Ray, Intersectable, Intersection, Geometry, Aabb};
 
 use super::{Sphere, Plane};
 
@@ -30,7 +30,7 @@ use super::{Sphere, Plane};
 //     }
 // }
 
-#[derive(Debug, Clone)]
+// #[derive(Debug, Clone)]
 pub struct StaticWorld<T>
 where
     T: Scalar
@@ -72,7 +72,7 @@ where
         let res = self.objects
             .iter()
             .filter_map(|geom| {
-                trace!("Searching: {ray:?} with {geom:?}");
+                // trace!("Searching: {ray:?} with {geom:?}");
                 match geom {
                     Geometry::Sphere(s) => s.intersect(ray, min_depth, max_depth),
                     Geometry::Plane(p) => p.intersect(ray, min_depth, max_depth),
@@ -84,6 +84,10 @@ where
             });
         trace!("Found: {res:?}");
         res
+    }
+
+    fn bounding_box(&self) -> Option<Aabb<T>> {
+        None
     }
 }
 
@@ -229,5 +233,32 @@ pub fn glass_sphere_scene<T: Scalar>() -> StaticWorld<T> {
             )
         );
     world.push_plane(Plane::default());
+    world
+}
+
+pub fn plane_scene<T: Scalar>() -> StaticWorld<T> {
+    let mut world = StaticWorld::default();;
+    world.push_plane(Plane::default());
+    world.push_plane(
+        Plane::new(
+            point![T::from(-0.5), T::zero(), T::zero()],
+            Unit::new_normalize(vector![T::from(1.0), T::from(0.3), T::zero()]),
+            Material::simple_diffuse_colour(colour::bright_green())
+        )
+    );
+    world.push_plane(
+        Plane::new(
+            point![T::from(0.5), T::zero(), T::zero()],
+            Unit::new_normalize(vector![T::from(-1.0), T::from(0.3), T::zero()]),
+            Material::simple_diffuse_colour(colour::bright_red())
+        )
+    );
+    world.push_sphere(
+        Sphere::new(
+            point![T::zero(), T::from(-0.1), T::from_float(-1.0)],
+            T::from(0.3),
+            Material::mirror(),
+        )
+    );
     world
 }
